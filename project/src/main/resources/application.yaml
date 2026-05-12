@@ -1,9 +1,9 @@
 server:
-  port: 8001
+  port: ${APP_PORT:8003}
 
 spring:
   application:
-    name: short-link-project
+    name: shortlink
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/link?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
@@ -11,31 +11,67 @@ spring:
     password: ${MYSQL_PASSWORD:root}
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
-      password: 123456
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:123456}
   mvc:
     view:
       prefix: /templates/
       suffix: .html
+  cloud:
+    nacos:
+      config:
+        import-check:
+          enabled: false
 
 short-link:
+  group:
+    max-num: 20
+  flow-limit:
+    enable: true
+    time-window: 1
+    max-access-count: 20
   domain:
-    default: nurl.ink:8001
+    default: nurl.ink:8003
+  demo-mode:
+    enable: false
+    blacklist:
+      - /api/short-link/admin/v1/group
+      - /api/short-link/admin/v1/recycle-bin/remove
+      - /api/short-link/admin/v1/create
+      - /api/short-link/admin/v1/create/batch
+      - /api/short-link/admin/v1/update
+      - /api/short-link/admin/v1/user
+      - /api/short-link/admin/v1/user/logout
+      - /api/short-link/admin/v1/recycle-bin/save
   stats:
     locale:
       amap-key: 824c511f0997586ea016f979fdb23087
   goto-domain:
     white-list:
-      enable: true
+      enable: false
       names: '拿个offer,知乎,掘金,博客园'
       details:
         - nageoffer.com
         - zhihu.com
         - juejin.cn
         - cnblogs.com
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:*}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
 
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath:mapper/*.xml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  metrics:
+    tags:
+      application: ${spring.application.name}
