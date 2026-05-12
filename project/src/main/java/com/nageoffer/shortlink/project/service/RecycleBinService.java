@@ -13,7 +13,7 @@ public interface RecycleBinService extends IService<ShortLinkDO> {
 
     void saveRecycleBin(RecycleBinSaveReqDTO requestParam);
 
-    IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam);
+    IPage<ShortLinkPageRespDTO> pageRecycleBinShortLink(ShortLinkRecycleBinPageReqDTO requestParam);
 
     void recoverRecycleBin(RecycleBinRecoverReqDTO requestParam);
 

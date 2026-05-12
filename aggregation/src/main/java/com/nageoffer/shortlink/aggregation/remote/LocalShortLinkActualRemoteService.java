@@ -109,7 +109,7 @@ public class LocalShortLinkActualRemoteService implements ShortLinkActualRemoteS
         actualRequest.setCurrent(current);
         actualRequest.setSize(size);
         IPage<com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO> actualPage =
-                recycleBinService.pageShortLink(actualRequest);
+                recycleBinService.pageRecycleBinShortLink(actualRequest);
         return Results.success(convertPage(actualPage, ShortLinkPageRespDTO.class));
     }
 
