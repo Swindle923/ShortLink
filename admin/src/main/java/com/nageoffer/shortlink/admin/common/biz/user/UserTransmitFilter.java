@@ -9,9 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-
 @RequiredArgsConstructor
 public class UserTransmitFilter implements Filter {
 
@@ -19,10 +16,10 @@ public class UserTransmitFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        String username = decodeHeader(httpServletRequest.getHeader("username"));
+        String username = HeaderUtils.decode(httpServletRequest.getHeader(HeaderUtils.HEADER_USERNAME_LOWER));
         if (StrUtil.isNotBlank(username)) {
-            String userId = httpServletRequest.getHeader("userId");
-            String realName = httpServletRequest.getHeader("realName");
+            String userId = httpServletRequest.getHeader(HeaderUtils.HEADER_USER_ID);
+            String realName = httpServletRequest.getHeader(HeaderUtils.HEADER_REAL_NAME);
             UserInfoDTO userInfoDTO = new UserInfoDTO(userId, username, realName);
             UserContext.setUser(userInfoDTO);
         }
@@ -30,17 +27,6 @@ public class UserTransmitFilter implements Filter {
             filterChain.doFilter(servletRequest, servletResponse);
         } finally {
             UserContext.removeUser();
-        }
-    }
-
-    private String decodeHeader(String value) {
-        if (StrUtil.isBlank(value)) {
-            return value;
-        }
-        try {
-            return URLDecoder.decode(value, StandardCharsets.UTF_8);
-        } catch (Exception ex) {
-            return value;
         }
     }
 }

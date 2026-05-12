@@ -18,12 +18,22 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @RequiredArgsConstructor
 public class UserAuthenticationFilter implements Filter {
+
+    private static final String ADMIN_API_PREFIX = "/api/short-link/admin/v1/";
+
+    private static final String LOGIN_URI = "/api/short-link/admin/v1/user/login";
+
+    private static final String REGISTER_URI = "/api/short-link/admin/v1/user";
+
+    private static final String HAS_USERNAME_URI = "/api/short-link/admin/v1/user/has-username";
+
+    private static final String ROLE_UPDATE_URI = "/api/short-link/admin/v1/user/role";
+
+    private static final String DEFAULT_ADMIN_USERNAME = "admin";
 
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -32,20 +42,14 @@ public class UserAuthenticationFilter implements Filter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
         String requestUri = httpServletRequest.getRequestURI();
-        if (!requestUri.startsWith("/api/short-link/admin/v1/")) {
+        if (!requestUri.startsWith(ADMIN_API_PREFIX)
+                || Objects.equals(httpServletRequest.getMethod(), "OPTIONS")
+                || isPublicApi(requestUri, httpServletRequest.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
-        if (Objects.equals(httpServletRequest.getMethod(), "OPTIONS")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        if (isPublicApi(requestUri, httpServletRequest.getMethod())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        String username = decodeHeader(httpServletRequest.getHeader("Username"));
-        String token = httpServletRequest.getHeader("Token");
+        String username = HeaderUtils.decode(httpServletRequest.getHeader(HeaderUtils.HEADER_USERNAME_UPPER));
+        String token = httpServletRequest.getHeader(HeaderUtils.HEADER_TOKEN);
         if (StrUtil.isBlank(username) || StrUtil.isBlank(token)) {
             returnJson(httpServletResponse, HttpServletResponse.SC_UNAUTHORIZED, "登录已失效，请重新登录");
             return;
@@ -55,43 +59,34 @@ public class UserAuthenticationFilter implements Filter {
             returnJson(httpServletResponse, HttpServletResponse.SC_UNAUTHORIZED, "登录已失效，请重新登录");
             return;
         }
-        if (isAdminApi(requestUri)) {
-            UserDO userDO = JSON.parseObject(loginUserJson.toString(), UserDO.class);
-            String role = userDO == null ? null : userDO.getRole();
-            if (StrUtil.isBlank(role) && Objects.equals(username, "admin")) {
-                role = UserRoleEnum.ADMIN.name();
-            }
-            if (!Objects.equals(role, UserRoleEnum.ADMIN.name())) {
-                returnJson(httpServletResponse, HttpServletResponse.SC_FORBIDDEN, "无权限执行该操作");
-                return;
-            }
+        if (isAdminApi(requestUri) && !hasAdminRole(loginUserJson, username)) {
+            returnJson(httpServletResponse, HttpServletResponse.SC_FORBIDDEN, "无权限执行该操作");
+            return;
         }
         filterChain.doFilter(request, response);
     }
 
     private boolean isPublicApi(String requestUri, String method) {
-        if (Objects.equals(requestUri, "/api/short-link/admin/v1/user/login")) {
+        if (Objects.equals(requestUri, LOGIN_URI)) {
             return true;
         }
-        if (Objects.equals(requestUri, "/api/short-link/admin/v1/user") && Objects.equals(method, "POST")) {
+        if (Objects.equals(requestUri, REGISTER_URI) && Objects.equals(method, "POST")) {
             return true;
         }
-        return Objects.equals(requestUri, "/api/short-link/admin/v1/user/has-username");
+        return Objects.equals(requestUri, HAS_USERNAME_URI);
     }
 
     private boolean isAdminApi(String requestUri) {
-        return Objects.equals(requestUri, "/api/short-link/admin/v1/user/role");
+        return Objects.equals(requestUri, ROLE_UPDATE_URI);
     }
 
-    private String decodeHeader(String value) {
-        if (StrUtil.isBlank(value)) {
-            return value;
+    private boolean hasAdminRole(Object loginUserJson, String username) {
+        UserDO userDO = JSON.parseObject(loginUserJson.toString(), UserDO.class);
+        String role = userDO == null ? null : userDO.getRole();
+        if (StrUtil.isBlank(role) && Objects.equals(username, DEFAULT_ADMIN_USERNAME)) {
+            role = UserRoleEnum.ADMIN.name();
         }
-        try {
-            return URLDecoder.decode(value, StandardCharsets.UTF_8);
-        } catch (Exception ex) {
-            return value;
-        }
+        return Objects.equals(role, UserRoleEnum.ADMIN.name());
     }
 
     private void returnJson(HttpServletResponse response, int statusCode, String message) throws IOException {
