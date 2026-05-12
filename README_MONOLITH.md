@@ -182,26 +182,3 @@ BASE_URL=http://127.0.0.1:8003 MAX_TIME=0.2 ./scripts/monolith-smoke-test.sh
 ```
 
 详细文档见：`docs/nacos/README.md`
-
-## 14. 统一测试平台（功能 + 性能）
-
-启动与执行：
-
-```bash
-./scripts/run-all-tests.sh
-```
-
-报告地址：
-
-- `http://127.0.0.1:8099`
-
-单独命令：
-
-```bash
-./scripts/start-test-platform.sh
-./scripts/run-functional-tests.sh
-./scripts/run-performance-tests.sh
-./scripts/stop-test-platform.sh
-```
-
-详细说明：`testing/README.md`
