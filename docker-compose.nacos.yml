@@ -1,0 +1,27 @@
+services:
+  nacos:
+    image: nacos/nacos-server:v2.2.3-slim
+    container_name: shortlink-nacos
+    restart: unless-stopped
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: "true"
+      NACOS_AUTH_IDENTITY_KEY: ${NACOS_AUTH_IDENTITY_KEY:-serverIdentity}
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_AUTH_IDENTITY_VALUE:-security}
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN:-VGhpc0lzQVNlY3VyZVNob3J0TGlua05hY29zVG9rZW5LZXlGb3JUZXN0}
+      NACOS_AUTH_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_AUTH_PASSWORD: ${NACOS_PASSWORD:-nacos}
+      JVM_XMS: 256m
+      JVM_XMX: 256m
+      JVM_XMN: 128m
+    ports:
+      - "${NACOS_PORT:-8848}:8848"
+      - "${NACOS_RPC_PORT:-9848}:9848"
+      - "${NACOS_RAFT_PORT:-9849}:9849"
+    volumes:
+      - nacos_data:/home/nacos/data
+      - nacos_logs:/home/nacos/logs
+
+volumes:
+  nacos_data:
+  nacos_logs:

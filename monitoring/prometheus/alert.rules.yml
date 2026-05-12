@@ -1,0 +1,182 @@
+groups:
+  - name: shortlink-service-alerts
+    rules:
+      - alert: ShortLinkAggregationDown
+        expr: up{job="shortlink-aggregation"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: shortlink
+        annotations:
+          summary: "聚合服务不可用"
+          description: "Prometheus 无法抓取 shortlink-aggregation 指标，检查 8003 服务和网络连通性。"
+
+      - alert: ShortLinkHighErrorRate
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[5m]))
+            /
+            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m]))
+          ) > 0.05
+          and
+          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+        for: 3m
+        labels:
+          severity: critical
+          team: shortlink
+        annotations:
+          summary: "聚合服务 5xx 错误率过高"
+          description: "最近 5 分钟 5xx 错误率超过 5%，请检查异常日志与依赖服务。"
+
+      - alert: ShortLinkP95LatencyHigh
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(http_server_requests_seconds_bucket{job="shortlink-aggregation"}[5m])) by (le)
+          ) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: shortlink
+        annotations:
+          summary: "聚合服务 P95 响应时间偏高"
+          description: "近 5 分钟 P95 超过 800ms，请检查慢 SQL、GC 与外部调用。"
+
+  - name: shortlink-jvm-alerts
+    rules:
+      - alert: ShortLinkJvmHeapHigh
+        expr: |
+          (
+            sum(jvm_memory_used_bytes{job="shortlink-aggregation",area="heap"})
+            /
+            sum(jvm_memory_max_bytes{job="shortlink-aggregation",area="heap"})
+          ) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          team: shortlink
+        annotations:
+          summary: "JVM 堆内存使用率过高"
+          description: "堆使用率连续 5 分钟超过 85%，建议检查内存泄漏或扩容。"
+
+      - alert: ShortLinkJvmGcPauseHigh
+        expr: |
+          sum(rate(jvm_gc_pause_seconds_sum{job="shortlink-aggregation"}[5m]))
+          /
+          sum(rate(jvm_gc_pause_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          team: shortlink
+        annotations:
+          summary: "JVM GC 平均停顿偏高"
+          description: "近 5 分钟 GC 平均停顿超过 200ms，建议排查内存压力。"
+
+  - name: shortlink-redis-alerts
+    rules:
+      - alert: ShortLinkRedisDown
+        expr: redis_up{job="redis-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: shortlink
+        annotations:
+          summary: "Redis 不可用"
+          description: "Redis Exporter 检测到 redis_up=0，请检查 Redis 进程和密码配置。"
+
+      - alert: ShortLinkRedisMemoryHigh
+        expr: |
+          redis_memory_used_bytes{job="redis-exporter"}
+          /
+          redis_memory_max_bytes{job="redis-exporter"} > 0.8
+          and redis_memory_max_bytes{job="redis-exporter"} > 0
+        for: 5m
+        labels:
+          severity: warning
+          team: shortlink
+        annotations:
+          summary: "Redis 内存使用率过高"
+          description: "Redis 使用内存超过配置上限 80%，建议调整 maxmemory 或清理冷数据。"
+
+  - name: shortlink-slo-tier-alerts
+    rules:
+      - alert: ShortLinkSLOP1AvailabilityDrop
+        expr: |
+          (
+            100 * (
+              1 - (
+                sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[5m]))
+                /
+                sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m]))
+              )
+            )
+          ) < 99
+          and
+          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 1
+        for: 2m
+        labels:
+          severity: P1
+          team: shortlink
+          slo_type: availability
+        annotations:
+          summary: "P1：SLO 可用性严重下降"
+          description: "近 5 分钟可用性低于 99%，属于高优先级故障，请立即处置。"
+
+      - alert: ShortLinkSLOP1ErrorBudgetBurnFast
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[5m]))
+            /
+            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m]))
+          ) / 0.001 > 14.4
+          and
+          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+        for: 2m
+        labels:
+          severity: P1
+          team: shortlink
+          slo_type: error_budget
+        annotations:
+          summary: "P1：错误预算燃烧过快"
+          description: "5 分钟窗口错误预算燃烧率超过 14.4，预计会快速耗尽预算。"
+
+      - alert: ShortLinkSLOP2ErrorBudgetBurnHigh
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[5m]))
+            /
+            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m]))
+          ) / 0.001 > 6
+          and
+          (
+            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[1h]))
+            /
+            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[1h]))
+          ) / 0.001 > 3
+          and
+          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: P2
+          team: shortlink
+          slo_type: error_budget
+        annotations:
+          summary: "P2：错误预算持续高燃烧"
+          description: "短窗口与长窗口燃烧率同时超阈值，预算消耗处于不可忽视区间。"
+
+      - alert: ShortLinkSLOP3LatencyDegraded
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(http_server_requests_seconds_bucket{job="shortlink-aggregation"}[5m])) by (le)
+          ) > 0.8
+          and
+          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+        for: 10m
+        labels:
+          severity: P3
+          team: shortlink
+          slo_type: latency
+        annotations:
+          summary: "P3：SLO 延迟目标未达标"
+          description: "P95 连续 10 分钟高于 800ms，请关注慢 SQL、缓存与线程池。"

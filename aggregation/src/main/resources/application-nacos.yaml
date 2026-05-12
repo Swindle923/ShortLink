@@ -1,0 +1,16 @@
+spring:
+  config:
+    import:
+      - optional:nacos:shortlink-common.yaml?group=${NACOS_GROUP:SHORTLINK_GROUP}&refreshEnabled=true
+      - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:SHORTLINK_GROUP}&refreshEnabled=true
+  cloud:
+    nacos:
+      config:
+        enabled: true
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:shortlink-dev}
+        group: ${NACOS_GROUP:SHORTLINK_GROUP}
+        file-extension: yaml
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        refresh-enabled: true

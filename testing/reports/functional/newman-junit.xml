@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="ShortLink Functional Suite" tests="4" time="0.980">
+  <testsuite name="Health Check" id="bdb9aa57-1124-4bcb-968b-2be6bafa48e8" timestamp="2026-04-16T17:54:59.379Z" tests="2" failures="0" errors="0" time="0.076">
+    <testcase name="健康检查返回 200" time="0.076" classname="ShortLinkFunctionalSuite"/>
+    <testcase name="服务状态 UP" time="0.076" classname="ShortLinkFunctionalSuite"/>
+  </testsuite>
+  <testsuite name="Login" id="bbf036b6-b0c0-435b-8077-c24e873cde1b" timestamp="2026-04-16T17:54:59.379Z" tests="1" failures="0" errors="0" time="0.038">
+    <testcase name="登录返回成功" time="0.038" classname="ShortLinkFunctionalSuite"/>
+  </testsuite>
+  <testsuite name="Query Group" id="b3b03a3f-323d-4dbd-9a63-e41c9e868421" timestamp="2026-04-16T17:54:59.379Z" tests="1" failures="0" errors="0" time="0.019">
+    <testcase name="分组查询成功" time="0.019" classname="ShortLinkFunctionalSuite"/>
+  </testsuite>
+  <testsuite name="Create ShortLink" id="6dbb9d8c-5818-4b08-b90f-2934ca165472" timestamp="2026-04-16T17:54:59.379Z" tests="1" failures="0" errors="0" time="0.847">
+    <testcase name="创建短链成功" time="0.847" classname="ShortLinkFunctionalSuite"/>
+  </testsuite>
+</testsuites>
