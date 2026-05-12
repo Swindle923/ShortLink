@@ -2,24 +2,24 @@ groups:
   - name: shortlink-service-alerts
     rules:
       - alert: ShortLinkAggregationDown
-        expr: up{job="shortlink-aggregation"} == 0
+        expr: up{job="shortlink"} == 0
         for: 1m
         labels:
           severity: critical
           team: shortlink
         annotations:
           summary: "聚合服务不可用"
-          description: "Prometheus 无法抓取 shortlink-aggregation 指标，检查 8003 服务和网络连通性。"
+          description: "Prometheus 无法抓取 shortlink 指标，检查 8003 服务和网络连通性。"
 
       - alert: ShortLinkHighErrorRate
         expr: |
           (
-            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[5m]))
+            sum(rate(http_server_requests_seconds_count{job="shortlink",status=~"5.."}[5m]))
             /
-            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m]))
+            sum(rate(http_server_requests_seconds_count{job="shortlink"}[5m]))
           ) > 0.05
           and
-          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+          sum(rate(http_server_requests_seconds_count{job="shortlink"}[5m])) > 0.2
         for: 3m
         labels:
           severity: critical
@@ -32,7 +32,7 @@ groups:
         expr: |
           histogram_quantile(
             0.95,
-            sum(rate(http_server_requests_seconds_bucket{job="shortlink-aggregation"}[5m])) by (le)
+            sum(rate(http_server_requests_seconds_bucket{job="shortlink"}[5m])) by (le)
           ) > 0.8
         for: 5m
         labels:
@@ -47,9 +47,9 @@ groups:
       - alert: ShortLinkJvmHeapHigh
         expr: |
           (
-            sum(jvm_memory_used_bytes{job="shortlink-aggregation",area="heap"})
+            sum(jvm_memory_used_bytes{job="shortlink",area="heap"})
             /
-            sum(jvm_memory_max_bytes{job="shortlink-aggregation",area="heap"})
+            sum(jvm_memory_max_bytes{job="shortlink",area="heap"})
           ) > 0.85
         for: 5m
         labels:
@@ -61,9 +61,9 @@ groups:
 
       - alert: ShortLinkJvmGcPauseHigh
         expr: |
-          sum(rate(jvm_gc_pause_seconds_sum{job="shortlink-aggregation"}[5m]))
+          sum(rate(jvm_gc_pause_seconds_sum{job="shortlink"}[5m]))
           /
-          sum(rate(jvm_gc_pause_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+          sum(rate(jvm_gc_pause_seconds_count{job="shortlink"}[5m])) > 0.2
         for: 5m
         labels:
           severity: warning
@@ -105,14 +105,14 @@ groups:
           (
             100 * (
               1 - (
-                sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[5m]))
+                sum(rate(http_server_requests_seconds_count{job="shortlink",status=~"5.."}[5m]))
                 /
-                sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m]))
+                sum(rate(http_server_requests_seconds_count{job="shortlink"}[5m]))
               )
             )
           ) < 99
           and
-          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 1
+          sum(rate(http_server_requests_seconds_count{job="shortlink"}[5m])) > 1
         for: 2m
         labels:
           severity: P1
@@ -125,12 +125,12 @@ groups:
       - alert: ShortLinkSLOP1ErrorBudgetBurnFast
         expr: |
           (
-            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[5m]))
+            sum(rate(http_server_requests_seconds_count{job="shortlink",status=~"5.."}[5m]))
             /
-            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m]))
+            sum(rate(http_server_requests_seconds_count{job="shortlink"}[5m]))
           ) / 0.001 > 14.4
           and
-          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+          sum(rate(http_server_requests_seconds_count{job="shortlink"}[5m])) > 0.2
         for: 2m
         labels:
           severity: P1
@@ -143,18 +143,18 @@ groups:
       - alert: ShortLinkSLOP2ErrorBudgetBurnHigh
         expr: |
           (
-            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[5m]))
+            sum(rate(http_server_requests_seconds_count{job="shortlink",status=~"5.."}[5m]))
             /
-            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m]))
+            sum(rate(http_server_requests_seconds_count{job="shortlink"}[5m]))
           ) / 0.001 > 6
           and
           (
-            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation",status=~"5.."}[1h]))
+            sum(rate(http_server_requests_seconds_count{job="shortlink",status=~"5.."}[1h]))
             /
-            sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[1h]))
+            sum(rate(http_server_requests_seconds_count{job="shortlink"}[1h]))
           ) / 0.001 > 3
           and
-          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+          sum(rate(http_server_requests_seconds_count{job="shortlink"}[5m])) > 0.2
         for: 5m
         labels:
           severity: P2
@@ -168,10 +168,10 @@ groups:
         expr: |
           histogram_quantile(
             0.95,
-            sum(rate(http_server_requests_seconds_bucket{job="shortlink-aggregation"}[5m])) by (le)
+            sum(rate(http_server_requests_seconds_bucket{job="shortlink"}[5m])) by (le)
           ) > 0.8
           and
-          sum(rate(http_server_requests_seconds_count{job="shortlink-aggregation"}[5m])) > 0.2
+          sum(rate(http_server_requests_seconds_count{job="shortlink"}[5m])) > 0.2
         for: 10m
         labels:
           severity: P3

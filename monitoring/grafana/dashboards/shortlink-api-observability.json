@@ -26,7 +26,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(10, sum(rate(http_server_requests_seconds_count{job=\"shortlink-aggregation\",uri!=\"UNKNOWN\"}[1m])) by (uri))",
+          "expr": "topk(10, sum(rate(http_server_requests_seconds_count{job=\"shortlink\",uri!=\"UNKNOWN\"}[1m])) by (uri))",
           "legendFormat": "{{uri}}"
         }
       ],
@@ -41,7 +41,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(10, histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"shortlink-aggregation\",uri!=\"UNKNOWN\"}[5m])) by (le, uri)))",
+          "expr": "topk(10, histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"shortlink\",uri!=\"UNKNOWN\"}[5m])) by (le, uri)))",
           "legendFormat": "{{uri}}"
         }
       ],
@@ -56,7 +56,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(http_server_requests_seconds_count{job=\"shortlink-aggregation\"}[1m])) by (status)",
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"shortlink\"}[1m])) by (status)",
           "legendFormat": "{{status}}"
         }
       ],
@@ -71,7 +71,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(10, 100 * (sum(rate(http_server_requests_seconds_count{job=\"shortlink-aggregation\",status=~\"5..\",uri!=\"UNKNOWN\"}[5m])) by (uri)) / (sum(rate(http_server_requests_seconds_count{job=\"shortlink-aggregation\",uri!=\"UNKNOWN\"}[5m])) by (uri))) )",
+          "expr": "topk(10, 100 * (sum(rate(http_server_requests_seconds_count{job=\"shortlink\",status=~\"5..\",uri!=\"UNKNOWN\"}[5m])) by (uri)) / (sum(rate(http_server_requests_seconds_count{job=\"shortlink\",uri!=\"UNKNOWN\"}[5m])) by (uri))) )",
           "legendFormat": "{{uri}}"
         }
       ],
@@ -86,7 +86,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(http_server_requests_seconds_bucket{job=\"shortlink-aggregation\"}[5m])) by (le)"
+          "expr": "sum(rate(http_server_requests_seconds_bucket{job=\"shortlink\"}[5m])) by (le)"
         }
       ]
     }

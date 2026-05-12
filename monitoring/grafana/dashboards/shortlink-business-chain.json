@@ -350,14 +350,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(http_server_requests_seconds_count{job=\"shortlink-aggregation\",uri=~\"/api/short-link/admin/v1/user.*\"}[1m])) by (uri,status)",
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"shortlink\",uri=~\"/api/short-link/admin/v1/user.*\"}[1m])) by (uri,status)",
           "legendFormat": "用户接口 {{uri}} {{status}}",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(http_server_requests_seconds_count{job=\"shortlink-aggregation\",uri=~\"/api/short-link/admin/v1/short-link.*\"}[1m])) by (uri,status)",
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"shortlink\",uri=~\"/api/short-link/admin/v1/short-link.*\"}[1m])) by (uri,status)",
           "legendFormat": "短链接口 {{uri}} {{status}}",
           "range": true,
           "refId": "B"

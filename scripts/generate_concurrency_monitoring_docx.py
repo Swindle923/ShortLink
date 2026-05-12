@@ -182,7 +182,7 @@ def main() -> None:
     add_bullets(
         doc,
         [
-            "Service 调用速率：统计 admin 与 project 层各服务方法的调用频率。",
+            "Service 调用速率：统计应用层各服务方法的调用频率。",
             "Service 方法 P95：衡量具体方法的长尾延迟。",
             "用户中心链路：关注注册、登录、登出等用户行为。",
             "短链接核心链路：关注创建、更新、配额消费等关键动作。",
@@ -200,7 +200,7 @@ def main() -> None:
     add_bullets(
         doc,
         [
-            "自动埋点由 ServiceMetricsAspect 完成，它统一拦截 admin.service.impl 与 project.service.impl 的方法调用，自动记录调用次数、成功率和延迟分布。",
+            "自动埋点由 ServiceMetricsAspect 完成，它统一拦截 project.service.impl 与 project.admin.service.impl 的方法调用，自动记录调用次数、成功率和延迟分布。",
             "业务埋点由 BizMetricsKit 完成，它让开发者可以在关键业务节点显式打点，例如短链接创建成功、冲突、配额耗尽、统计查询为空、回收站恢复成功等。",
             "自动埋点更适合看服务层性能，业务埋点更适合解释业务状态变化。",
         ],

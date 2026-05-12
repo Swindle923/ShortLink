@@ -24,9 +24,9 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "datasource": "Prometheus",
       "targets": [
-        { "refId": "A", "expr": "sum(jvm_memory_used_bytes{job=\"shortlink-aggregation\",area=\"heap\"})", "legendFormat": "heap used" },
-        { "refId": "B", "expr": "sum(jvm_memory_used_bytes{job=\"shortlink-aggregation\",area=\"nonheap\"})", "legendFormat": "nonheap used" },
-        { "refId": "C", "expr": "sum(jvm_memory_max_bytes{job=\"shortlink-aggregation\",area=\"heap\"})", "legendFormat": "heap max" }
+        { "refId": "A", "expr": "sum(jvm_memory_used_bytes{job=\"shortlink\",area=\"heap\"})", "legendFormat": "heap used" },
+        { "refId": "B", "expr": "sum(jvm_memory_used_bytes{job=\"shortlink\",area=\"nonheap\"})", "legendFormat": "nonheap used" },
+        { "refId": "C", "expr": "sum(jvm_memory_max_bytes{job=\"shortlink\",area=\"heap\"})", "legendFormat": "heap max" }
       ],
       "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] }
     },
@@ -37,8 +37,8 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "datasource": "Prometheus",
       "targets": [
-        { "refId": "A", "expr": "sum(rate(jvm_gc_pause_seconds_count{job=\"shortlink-aggregation\"}[1m]))", "legendFormat": "gc count/s" },
-        { "refId": "B", "expr": "sum(rate(jvm_gc_pause_seconds_sum{job=\"shortlink-aggregation\"}[1m]))", "legendFormat": "gc pause seconds/s" }
+        { "refId": "A", "expr": "sum(rate(jvm_gc_pause_seconds_count{job=\"shortlink\"}[1m]))", "legendFormat": "gc count/s" },
+        { "refId": "B", "expr": "sum(rate(jvm_gc_pause_seconds_sum{job=\"shortlink\"}[1m]))", "legendFormat": "gc pause seconds/s" }
       ],
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }
     },
@@ -49,9 +49,9 @@
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
       "datasource": "Prometheus",
       "targets": [
-        { "refId": "A", "expr": "jvm_threads_live_threads{job=\"shortlink-aggregation\"}", "legendFormat": "live" },
-        { "refId": "B", "expr": "jvm_threads_peak_threads{job=\"shortlink-aggregation\"}", "legendFormat": "peak" },
-        { "refId": "C", "expr": "jvm_threads_daemon_threads{job=\"shortlink-aggregation\"}", "legendFormat": "daemon" }
+        { "refId": "A", "expr": "jvm_threads_live_threads{job=\"shortlink\"}", "legendFormat": "live" },
+        { "refId": "B", "expr": "jvm_threads_peak_threads{job=\"shortlink\"}", "legendFormat": "peak" },
+        { "refId": "C", "expr": "jvm_threads_daemon_threads{job=\"shortlink\"}", "legendFormat": "daemon" }
       ],
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }
     },
@@ -62,8 +62,8 @@
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
       "datasource": "Prometheus",
       "targets": [
-        { "refId": "A", "expr": "jvm_classes_loaded_classes{job=\"shortlink-aggregation\"}", "legendFormat": "loaded" },
-        { "refId": "B", "expr": "jvm_classes_unloaded_classes_total{job=\"shortlink-aggregation\"}", "legendFormat": "unloaded total" }
+        { "refId": "A", "expr": "jvm_classes_loaded_classes{job=\"shortlink\"}", "legendFormat": "loaded" },
+        { "refId": "B", "expr": "jvm_classes_unloaded_classes_total{job=\"shortlink\"}", "legendFormat": "unloaded total" }
       ],
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }
     },
@@ -74,8 +74,8 @@
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
       "datasource": "Prometheus",
       "targets": [
-        { "refId": "A", "expr": "process_cpu_usage{job=\"shortlink-aggregation\"}", "legendFormat": "process cpu" },
-        { "refId": "B", "expr": "system_cpu_usage{job=\"shortlink-aggregation\"}", "legendFormat": "system cpu" }
+        { "refId": "A", "expr": "process_cpu_usage{job=\"shortlink\"}", "legendFormat": "process cpu" },
+        { "refId": "B", "expr": "system_cpu_usage{job=\"shortlink\"}", "legendFormat": "system cpu" }
       ],
       "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] }
     },
@@ -86,9 +86,9 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
       "datasource": "Prometheus",
       "targets": [
-        { "refId": "A", "expr": "tomcat_threads_busy_threads{job=\"shortlink-aggregation\"}", "legendFormat": "busy" },
-        { "refId": "B", "expr": "tomcat_threads_current_threads{job=\"shortlink-aggregation\"}", "legendFormat": "current" },
-        { "refId": "C", "expr": "tomcat_threads_config_max_threads{job=\"shortlink-aggregation\"}", "legendFormat": "max" }
+        { "refId": "A", "expr": "tomcat_threads_busy_threads{job=\"shortlink\"}", "legendFormat": "busy" },
+        { "refId": "B", "expr": "tomcat_threads_current_threads{job=\"shortlink\"}", "legendFormat": "current" },
+        { "refId": "C", "expr": "tomcat_threads_config_max_threads{job=\"shortlink\"}", "legendFormat": "max" }
       ],
       "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }
     },
@@ -99,7 +99,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
       "datasource": "Prometheus",
       "targets": [
-        { "refId": "A", "expr": "process_uptime_seconds{job=\"shortlink-aggregation\"}", "legendFormat": "uptime" }
+        { "refId": "A", "expr": "process_uptime_seconds{job=\"shortlink\"}", "legendFormat": "uptime" }
       ],
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }
     }

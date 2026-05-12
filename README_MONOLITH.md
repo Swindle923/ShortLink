@@ -8,9 +8,9 @@
 
 ## 2. 架构改造说明（微服务 -> 单体）
 
-- 统一入口：使用 `aggregation` 作为唯一后端服务入口（端口 `8003`）。
-- 模块合并：`admin` + `project` 由单进程加载，统一路由。
-- 消除服务间调用：新增本地实现 `LocalShortLinkActualRemoteService`，直接调用 `project` 服务层，不再走 Feign HTTP。
+- 统一入口：使用 `project` 作为唯一后端服务入口（端口 `8003`）。
+- 模块合并：已将 `admin` 模块合并至 `project`，统一路由。
+- 消除服务间调用：`admin` Controller 直接依赖 `project` 的 Service 类，不再走 Feign HTTP。
 - 运行模型：不依赖注册中心与网关，后端单进程直接提供管理与跳转能力。
 - 统一跨域：新增 `MonolithCorsConfiguration`，支持来源、方法、头、凭证统一配置。
 

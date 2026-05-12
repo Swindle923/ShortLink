@@ -16,6 +16,6 @@ export PATH="$JAVA_HOME/bin:/opt/homebrew/opt/node@22/bin:/opt/homebrew/bin:$PAT
 mkdir -p "$ROOT_DIR/.sentinel-logs"
 export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:-} -Dcsp.sentinel.log.dir=$ROOT_DIR/.sentinel-logs"
 
-"$MVN_BIN" -pl aggregation -am -DskipTests package
+"$MVN_BIN" -pl project -am -DskipTests package
 
-exec "$JAVA_HOME/bin/java" -jar "$ROOT_DIR/aggregation/target/shortlink-aggregation.jar"
+exec "$JAVA_HOME/bin/java" -jar "$ROOT_DIR/project/target/shortlink.jar"

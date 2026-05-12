@@ -20,13 +20,13 @@ scrape_configs:
       - targets:
           - localhost:9090
 
-  - job_name: shortlink-aggregation
+  - job_name: shortlink
     metrics_path: /actuator/prometheus
     static_configs:
       - targets:
           - host.docker.internal:8003
         labels:
-          service: shortlink-aggregation
+          service: shortlink
 
   - job_name: redis-exporter
     static_configs:

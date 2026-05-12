@@ -62,6 +62,6 @@ echo "== Build Compatibility Check =="
   cd "$ROOT_DIR"
   export JAVA_HOME="$JAVA_HOME_CANDIDATE"
   export PATH="$JAVA_HOME/bin:/opt/homebrew/opt/node@22/bin:/opt/homebrew/bin:$PATH"
-  "$MVN_BIN" -pl aggregation -am -DskipTests package >/tmp/shortlink-monolith-build.log
+  "$MVN_BIN" -pl project -am -DskipTests package >/tmp/shortlink-monolith-build.log
 )
 ok "Maven 构建通过（日志: /tmp/shortlink-monolith-build.log）"

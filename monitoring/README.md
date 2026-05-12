@@ -69,7 +69,7 @@ Grafana 已预置 Loki 数据源，进入 `Explore` 可直接查询日志。
 常用 LogQL 示例：
 
 ```logql
-{container="shortlink-aggregation"}
+{container="shortlink"}
 ```
 
 ```logql

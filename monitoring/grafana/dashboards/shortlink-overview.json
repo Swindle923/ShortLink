@@ -55,7 +55,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(http_server_requests_seconds_count{job=\"shortlink-aggregation\"}[1m]))",
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"shortlink\"}[1m]))",
           "legendFormat": "QPS",
           "range": true,
           "refId": "A"
@@ -96,7 +96,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"shortlink-aggregation\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"shortlink\"}[5m])) by (le))",
           "legendFormat": "P95",
           "range": true,
           "refId": "A"
@@ -154,7 +154,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * sum(rate(http_server_requests_seconds_count{job=\"shortlink-aggregation\",status=~\"5..\"}[5m])) / sum(rate(http_server_requests_seconds_count{job=\"shortlink-aggregation\"}[5m]))",
+          "expr": "100 * sum(rate(http_server_requests_seconds_count{job=\"shortlink\",status=~\"5..\"}[5m])) / sum(rate(http_server_requests_seconds_count{job=\"shortlink\"}[5m]))",
           "refId": "A"
         }
       ],
@@ -217,7 +217,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "up{job=\"shortlink-aggregation\"}",
+          "expr": "up{job=\"shortlink\"}",
           "refId": "A"
         }
       ],
@@ -256,7 +256,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(jvm_memory_used_bytes{job=\"shortlink-aggregation\",area=\"heap\"}) / sum(jvm_memory_max_bytes{job=\"shortlink-aggregation\",area=\"heap\"})",
+          "expr": "sum(jvm_memory_used_bytes{job=\"shortlink\",area=\"heap\"}) / sum(jvm_memory_max_bytes{job=\"shortlink\",area=\"heap\"})",
           "legendFormat": "Heap Usage",
           "range": true,
           "refId": "A"
@@ -297,7 +297,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(jvm_gc_pause_seconds_sum{job=\"shortlink-aggregation\"}[5m])) / sum(rate(jvm_gc_pause_seconds_count{job=\"shortlink-aggregation\"}[5m]))",
+          "expr": "sum(rate(jvm_gc_pause_seconds_sum{job=\"shortlink\"}[5m])) / sum(rate(jvm_gc_pause_seconds_count{job=\"shortlink\"}[5m]))",
           "legendFormat": "Avg GC Pause",
           "range": true,
           "refId": "A"

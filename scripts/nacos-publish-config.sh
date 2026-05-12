@@ -42,9 +42,9 @@ curl -sf -X POST "http://${NACOS_ADDR}/nacos/v1/cs/configs" \
   --data-urlencode "password=${NACOS_PASSWORD}" \
   --data-urlencode "content=${common_content}" >/dev/null
 
-echo "[nacos] publishing short-link-aggregation.yaml ..."
+echo "[nacos] publishing shortlink.yaml ..."
 curl -sf -X POST "http://${NACOS_ADDR}/nacos/v1/cs/configs" \
-  --data-urlencode "dataId=short-link-aggregation.yaml" \
+  --data-urlencode "dataId=shortlink.yaml" \
   --data-urlencode "group=${NACOS_GROUP}" \
   --data-urlencode "tenant=${NACOS_NAMESPACE}" \
   --data-urlencode "type=yaml" \
