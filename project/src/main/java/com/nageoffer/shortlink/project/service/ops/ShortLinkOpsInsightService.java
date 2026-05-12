@@ -1,10 +1,10 @@
-package com.nageoffer.shortlink.aggregation.service;
+package com.nageoffer.shortlink.project.service.ops;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkOpsLifecycleAlertRespDTO;
-import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkOpsOverviewRespDTO;
-import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkOpsRiskRespDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkOpsLifecycleAlertRespDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkOpsOverviewRespDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkOpsRiskRespDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.nageoffer.shortlink.project.service.ShortLinkService;

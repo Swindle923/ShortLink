@@ -10,7 +10,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.nageoffer.shortlink.admin.common.biz.user.UserContext;
 import com.nageoffer.shortlink.admin.common.convention.exception.ClientException;
 import com.nageoffer.shortlink.admin.common.convention.exception.ServiceException;
-import com.nageoffer.shortlink.admin.common.convention.result.Result;
 import com.nageoffer.shortlink.admin.dao.entity.GroupDO;
 import com.nageoffer.shortlink.admin.dao.entity.GroupUniqueDO;
 import com.nageoffer.shortlink.admin.dao.mapper.GroupMapper;
@@ -18,8 +17,8 @@ import com.nageoffer.shortlink.admin.dao.mapper.GroupUniqueMapper;
 import com.nageoffer.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.nageoffer.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.nageoffer.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
-import com.nageoffer.shortlink.admin.remote.ShortLinkActualRemoteService;
-import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
+import com.nageoffer.shortlink.project.service.ShortLinkService;
 import com.nageoffer.shortlink.admin.service.GroupService;
 import com.nageoffer.shortlink.admin.toolkit.RandomGenerator;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +43,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
 
     private final RBloomFilter<String> gidRegisterCachePenetrationBloomFilter;
     private final GroupUniqueMapper groupUniqueMapper;
-    private final ShortLinkActualRemoteService shortLinkActualRemoteService;
+    private final ShortLinkService shortLinkService;
     private final RedissonClient redissonClient;
 
     @Value("${short-link.group.max-num}")
@@ -100,11 +99,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .eq(GroupDO::getUsername, UserContext.getUsername())
                 .orderByDesc(GroupDO::getSortOrder, GroupDO::getUpdateTime);
         List<GroupDO> groupDOList = baseMapper.selectList(queryWrapper);
-        Result<List<ShortLinkGroupCountQueryRespDTO>> listResult = shortLinkActualRemoteService
+        List<ShortLinkGroupCountQueryRespDTO> groupCountList = shortLinkService
                 .listGroupShortLinkCount(groupDOList.stream().map(GroupDO::getGid).toList());
         List<ShortLinkGroupRespDTO> shortLinkGroupRespDTOList = BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
         shortLinkGroupRespDTOList.forEach(each -> {
-            Optional<ShortLinkGroupCountQueryRespDTO> first = listResult.getData().stream()
+            Optional<ShortLinkGroupCountQueryRespDTO> first = groupCountList.stream()
                     .filter(item -> Objects.equals(item.getGid(), each.getGid()))
                     .findFirst();
             first.ifPresent(item -> each.setShortLinkCount(first.get().getShortLinkCount()));

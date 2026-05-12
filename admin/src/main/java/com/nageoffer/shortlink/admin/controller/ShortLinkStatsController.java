@@ -1,14 +1,15 @@
 package com.nageoffer.shortlink.admin.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.nageoffer.shortlink.admin.common.convention.result.Result;
-import com.nageoffer.shortlink.admin.remote.ShortLinkActualRemoteService;
-import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkGroupStatsAccessRecordReqDTO;
-import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkGroupStatsReqDTO;
-import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkStatsAccessRecordReqDTO;
-import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkStatsReqDTO;
-import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkStatsAccessRecordRespDTO;
-import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkStatsRespDTO;
+import com.nageoffer.shortlink.admin.common.convention.result.Results;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkGroupStatsAccessRecordReqDTO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkGroupStatsReqDTO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkStatsAccessRecordReqDTO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkStatsReqDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkStatsAccessRecordRespDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkStatsRespDTO;
+import com.nageoffer.shortlink.project.service.ShortLinkStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,49 +18,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ShortLinkStatsController {
 
-    private final ShortLinkActualRemoteService shortLinkActualRemoteService;
+    private final ShortLinkStatsService shortLinkStatsService;
 
     @GetMapping("/api/short-link/admin/v1/stats")
     public Result<ShortLinkStatsRespDTO> shortLinkStats(ShortLinkStatsReqDTO requestParam) {
-        return shortLinkActualRemoteService.oneShortLinkStats(
-                requestParam.getFullShortUrl(),
-                requestParam.getGid(),
-                requestParam.getEnableStatus(),
-                requestParam.getStartDate(),
-                requestParam.getEndDate()
-        );
+        return Results.success(shortLinkStatsService.oneShortLinkStats(requestParam));
     }
 
     @GetMapping("/api/short-link/admin/v1/stats/group")
     public Result<ShortLinkStatsRespDTO> groupShortLinkStats(ShortLinkGroupStatsReqDTO requestParam) {
-        return shortLinkActualRemoteService.groupShortLinkStats(
-                requestParam.getGid(),
-                requestParam.getStartDate(),
-                requestParam.getEndDate()
-        );
+        return Results.success(shortLinkStatsService.groupShortLinkStats(requestParam));
     }
 
     @GetMapping("/api/short-link/admin/v1/stats/access-record")
-    public Result<Page<ShortLinkStatsAccessRecordRespDTO>> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam) {
-        return shortLinkActualRemoteService.shortLinkStatsAccessRecord(
-                requestParam.getFullShortUrl(),
-                requestParam.getGid(),
-                requestParam.getStartDate(),
-                requestParam.getEndDate(),
-                requestParam.getEnableStatus(),
-                requestParam.getCurrent(),
-                requestParam.getSize()
-        );
+    public Result<IPage<ShortLinkStatsAccessRecordRespDTO>> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam) {
+        return Results.success(shortLinkStatsService.shortLinkStatsAccessRecord(requestParam));
     }
 
     @GetMapping("/api/short-link/admin/v1/stats/access-record/group")
-    public Result<Page<ShortLinkStatsAccessRecordRespDTO>> groupShortLinkStatsAccessRecord(ShortLinkGroupStatsAccessRecordReqDTO requestParam) {
-        return shortLinkActualRemoteService.groupShortLinkStatsAccessRecord(
-                requestParam.getGid(),
-                requestParam.getStartDate(),
-                requestParam.getEndDate(),
-                requestParam.getCurrent(),
-                requestParam.getSize()
-        );
+    public Result<IPage<ShortLinkStatsAccessRecordRespDTO>> groupShortLinkStatsAccessRecord(ShortLinkGroupStatsAccessRecordReqDTO requestParam) {
+        return Results.success(shortLinkStatsService.groupShortLinkStatsAccessRecord(requestParam));
     }
 }
