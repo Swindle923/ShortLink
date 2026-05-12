@@ -3,7 +3,7 @@ package com.nageoffer.shortlink.admin.config;
 import com.nageoffer.shortlink.admin.common.biz.user.UserFlowRiskControlFilter;
 import com.nageoffer.shortlink.admin.common.biz.user.UserAuthenticationFilter;
 import com.nageoffer.shortlink.admin.common.biz.user.UserTransmitFilter;
-import com.nageoffer.shortlink.admin.common.monitoring.BizMetricsKit;
+import com.nageoffer.shortlink.project.common.monitoring.BizMetricsKit;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

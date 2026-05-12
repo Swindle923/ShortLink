@@ -3,7 +3,7 @@ package com.nageoffer.shortlink.admin.common.biz.user;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import com.nageoffer.shortlink.admin.common.constant.RedisCacheConstant;
-import com.nageoffer.shortlink.admin.common.convention.result.Results;
+import com.nageoffer.shortlink.project.common.convention.result.Results;
 import com.nageoffer.shortlink.admin.common.enums.UserRoleEnum;
 import com.nageoffer.shortlink.admin.dao.entity.UserDO;
 import jakarta.servlet.Filter;

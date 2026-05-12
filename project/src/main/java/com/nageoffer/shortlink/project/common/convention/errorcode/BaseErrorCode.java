@@ -16,6 +16,8 @@ public enum BaseErrorCode implements IErrorCode {
     IDEMPOTENT_TOKEN_NULL_ERROR("A000200", "幂等Token为空"),
     IDEMPOTENT_TOKEN_DELETE_ERROR("A000201", "幂等Token已被使用或失效"),
 
+    FLOW_LIMIT_ERROR("A000300", "当前系统繁忙，请稍后再试"),
+
     SERVICE_ERROR("B000001", "系统执行出错"),
 
     SERVICE_TIMEOUT_ERROR("B000100", "系统执行超时"),

@@ -2,9 +2,10 @@ package com.nageoffer.shortlink.admin.common.biz.user;
 
 import com.alibaba.fastjson2.JSON;
 import com.google.common.collect.Lists;
-import com.nageoffer.shortlink.admin.common.monitoring.BizMetricsKit;
-import com.nageoffer.shortlink.admin.common.convention.exception.ClientException;
-import com.nageoffer.shortlink.admin.common.convention.result.Results;
+import com.nageoffer.shortlink.project.common.biz.user.UserContext;
+import com.nageoffer.shortlink.project.common.monitoring.BizMetricsKit;
+import com.nageoffer.shortlink.project.common.convention.exception.ClientException;
+import com.nageoffer.shortlink.project.common.convention.result.Results;
 import com.nageoffer.shortlink.admin.config.UserFlowRiskControlConfiguration;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -25,7 +26,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Optional;
 
-import static com.nageoffer.shortlink.admin.common.convention.errorcode.BaseErrorCode.FLOW_LIMIT_ERROR;
+import static com.nageoffer.shortlink.project.common.convention.errorcode.BaseErrorCode.FLOW_LIMIT_ERROR;
 
 @Slf4j
 @RequiredArgsConstructor

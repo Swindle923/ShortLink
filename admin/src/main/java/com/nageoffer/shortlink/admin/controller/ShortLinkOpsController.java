@@ -1,8 +1,8 @@
 package com.nageoffer.shortlink.admin.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.nageoffer.shortlink.admin.common.convention.result.Result;
-import com.nageoffer.shortlink.admin.common.convention.result.Results;
+import com.nageoffer.shortlink.project.common.convention.result.Result;
+import com.nageoffer.shortlink.project.common.convention.result.Results;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkOpsLifecycleAlertRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkOpsOverviewRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkOpsRiskRespDTO;
