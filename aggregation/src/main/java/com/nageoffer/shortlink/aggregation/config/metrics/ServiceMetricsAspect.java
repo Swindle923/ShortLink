@@ -18,7 +18,7 @@ public class ServiceMetricsAspect {
 
     private final MeterRegistry meterRegistry;
 
-    @Around("execution(* com.nageoffer.shortlink.admin.service.impl..*(..)) || execution(* com.nageoffer.shortlink.project.service.impl..*(..))")
+    @Around("execution(* com.nageoffer.shortlink.project.admin.service.impl..*(..)) || execution(* com.nageoffer.shortlink.project.service.impl..*(..))")
     public Object aroundServiceCall(ProceedingJoinPoint joinPoint) throws Throwable {
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
