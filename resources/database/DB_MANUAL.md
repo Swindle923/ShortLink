@@ -11,17 +11,7 @@
 
 ## 2. 导入方式
 
-### 2.1 仅建表
-
-执行：
-
-```sql
-SOURCE resources/database/create-tables.sql;
-```
-
-### 2.2 建表 + 初始化数据
-
-执行：
+建表并导入初始数据：
 
 ```sql
 SOURCE resources/database/link.sql;

@@ -120,7 +120,7 @@ BASE_URL=http://127.0.0.1:8003 MAX_TIME=0.2 ./scripts/monolith-smoke-test.sh
 ## 10. 数据库文档与建表脚本
 
 - 数据库说明文档：`resources/database/DB_MANUAL.md`
-- 单体建表脚本：`resources/database/create-tables.sql`
+- 单体建表脚本：`resources/database/link.sql`
 - 初始化数据脚本：`resources/database/link-data.sql`
 
 ## 11. Vercel 部署说明
