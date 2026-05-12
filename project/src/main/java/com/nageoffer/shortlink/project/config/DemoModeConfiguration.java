@@ -1,4 +1,4 @@
-package com.nageoffer.shortlink.aggregation.config;
+package com.nageoffer.shortlink.project.config;
 
 import com.alibaba.fastjson.JSON;
 import com.nageoffer.shortlink.project.common.convention.result.Result;

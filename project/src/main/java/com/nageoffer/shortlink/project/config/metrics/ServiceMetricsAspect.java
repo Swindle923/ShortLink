@@ -1,4 +1,4 @@
-package com.nageoffer.shortlink.aggregation.config.metrics;
+package com.nageoffer.shortlink.project.config.metrics;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;

@@ -1,4 +1,4 @@
-package com.nageoffer.shortlink.aggregation.config;
+package com.nageoffer.shortlink.project.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

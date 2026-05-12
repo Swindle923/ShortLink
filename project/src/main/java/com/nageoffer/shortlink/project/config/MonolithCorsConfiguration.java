@@ -1,4 +1,4 @@
-package com.nageoffer.shortlink.aggregation.config;
+package com.nageoffer.shortlink.project.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
