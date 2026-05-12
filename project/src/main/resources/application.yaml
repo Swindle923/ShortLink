@@ -1,5 +1,8 @@
 server:
   port: ${APP_PORT:8003}
+  tomcat:
+    mbeanregistry:
+      enabled: true
 
 spring:
   application:

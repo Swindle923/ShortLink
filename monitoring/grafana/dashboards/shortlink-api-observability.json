@@ -71,7 +71,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(10, 100 * (sum(rate(http_server_requests_seconds_count{job=\"shortlink\",status=~\"5..\",uri!=\"UNKNOWN\"}[5m])) by (uri)) / (sum(rate(http_server_requests_seconds_count{job=\"shortlink\",uri!=\"UNKNOWN\"}[5m])) by (uri))) )",
+          "expr": "topk(10, 100 * (sum(rate(http_server_requests_seconds_count{job=\"shortlink\",status=~\"5..\",uri!=\"UNKNOWN\"}[5m])) by (uri)) / (sum(rate(http_server_requests_seconds_count{job=\"shortlink\",uri!=\"UNKNOWN\"}[5m])) by (uri)))",
           "legendFormat": "{{uri}}"
         }
       ],
