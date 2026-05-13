@@ -14,8 +14,7 @@ const menus = [
   { path: '/dashboard', title: '运营大盘', icon: 'DataAnalysis' },
   { path: '/users', title: '用户管理', icon: 'User' },
   { path: '/links', title: '短链接管理', icon: 'Link' },
-  { path: '/monitoring', title: '监控中心', icon: 'Odometer' },
-  { path: '/audit', title: '审计日志', icon: 'Document' }
+  { path: '/monitoring', title: '监控中心', icon: 'Odometer' }
 ];
 
 const navigate = (path) => router.push(path);

@@ -1,8 +1,6 @@
 package com.nageoffer.shortlink.project.console.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.nageoffer.shortlink.project.console.dao.entity.AdminAuditLogDO;
-import com.nageoffer.shortlink.project.console.dto.req.ConsoleAuditLogPageReqDTO;
 import com.nageoffer.shortlink.project.console.dto.req.ConsoleLinkPageReqDTO;
 import com.nageoffer.shortlink.project.console.dto.req.ConsoleLoginReqDTO;
 import com.nageoffer.shortlink.project.console.dto.req.ConsoleUserPageReqDTO;
@@ -29,6 +27,4 @@ public interface ConsoleService {
     void disableLink(String fullShortUrl, String gid);
 
     void enableLink(String fullShortUrl, String gid);
-
-    IPage<AdminAuditLogDO> pageAuditLogs(ConsoleAuditLogPageReqDTO req);
 }

@@ -16,9 +16,6 @@ import com.nageoffer.shortlink.project.admin.dao.entity.UserDO;
 import com.nageoffer.shortlink.project.admin.dao.mapper.GroupMapper;
 import com.nageoffer.shortlink.project.admin.dao.mapper.UserMapper;
 import com.nageoffer.shortlink.project.common.convention.exception.ClientException;
-import com.nageoffer.shortlink.project.console.dao.entity.AdminAuditLogDO;
-import com.nageoffer.shortlink.project.console.dao.mapper.AdminAuditLogMapper;
-import com.nageoffer.shortlink.project.console.dto.req.ConsoleAuditLogPageReqDTO;
 import com.nageoffer.shortlink.project.console.dto.req.ConsoleLinkPageReqDTO;
 import com.nageoffer.shortlink.project.console.dto.req.ConsoleLoginReqDTO;
 import com.nageoffer.shortlink.project.console.dto.req.ConsoleUserPageReqDTO;
@@ -46,7 +43,6 @@ public class ConsoleServiceImpl implements ConsoleService {
     private final UserMapper userMapper;
     private final GroupMapper groupMapper;
     private final ShortLinkMapper shortLinkMapper;
-    private final AdminAuditLogMapper auditLogMapper;
     private final StringRedisTemplate stringRedisTemplate;
 
     @Override
@@ -257,26 +253,5 @@ public class ConsoleServiceImpl implements ConsoleService {
         if (shortLinkMapper.update(null, u) < 1) {
             throw new ClientException("短链接不存在");
         }
-    }
-
-    @Override
-    public IPage<AdminAuditLogDO> pageAuditLogs(ConsoleAuditLogPageReqDTO req) {
-        LambdaQueryWrapper<AdminAuditLogDO> wrapper = Wrappers.lambdaQuery(AdminAuditLogDO.class)
-                .eq(AdminAuditLogDO::getDelFlag, 0)
-                .orderByDesc(AdminAuditLogDO::getCreateTime);
-        if (StrUtil.isNotBlank(req.getAdminUsername())) {
-            wrapper.eq(AdminAuditLogDO::getAdminUsername, req.getAdminUsername());
-        }
-        if (StrUtil.isNotBlank(req.getActionType())) {
-            wrapper.eq(AdminAuditLogDO::getActionType, req.getActionType());
-        }
-        if (StrUtil.isNotBlank(req.getTargetType())) {
-            wrapper.eq(AdminAuditLogDO::getTargetType, req.getTargetType());
-        }
-        if (req.getSuccess() != null) {
-            wrapper.eq(AdminAuditLogDO::getSuccess, req.getSuccess());
-        }
-        Page<AdminAuditLogDO> page = new Page<>(req.getCurrent(), req.getSize());
-        return auditLogMapper.selectPage(page, wrapper);
     }
 }

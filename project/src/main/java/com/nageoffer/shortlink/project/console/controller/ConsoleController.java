@@ -5,9 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.nageoffer.shortlink.project.common.biz.user.UserContext;
 import com.nageoffer.shortlink.project.common.convention.result.Result;
 import com.nageoffer.shortlink.project.common.convention.result.Results;
-import com.nageoffer.shortlink.project.console.aspect.AdminAudit;
-import com.nageoffer.shortlink.project.console.dao.entity.AdminAuditLogDO;
-import com.nageoffer.shortlink.project.console.dto.req.ConsoleAuditLogPageReqDTO;
 import com.nageoffer.shortlink.project.console.dto.req.ConsoleLinkPageReqDTO;
 import com.nageoffer.shortlink.project.console.dto.req.ConsoleLoginReqDTO;
 import com.nageoffer.shortlink.project.console.dto.req.ConsoleUserPageReqDTO;
@@ -57,21 +54,18 @@ public class ConsoleController {
         return Results.success(consoleService.pageUsers(req));
     }
 
-    @AdminAudit(actionType = "FREEZE_USER", targetType = "USER")
     @PostMapping("/api/short-link/console/v1/users/freeze")
     public Result<Void> freezeUser(@RequestParam("username") String username) {
         consoleService.freezeUser(username);
         return Results.success();
     }
 
-    @AdminAudit(actionType = "UNFREEZE_USER", targetType = "USER")
     @PostMapping("/api/short-link/console/v1/users/unfreeze")
     public Result<Void> unfreezeUser(@RequestParam("username") String username) {
         consoleService.unfreezeUser(username);
         return Results.success();
     }
 
-    @AdminAudit(actionType = "UPDATE_USER_ROLE", targetType = "USER")
     @PostMapping("/api/short-link/console/v1/users/role")
     public Result<Void> updateUserRole(@RequestParam("username") String username,
                                        @RequestParam("role") String role) {
@@ -84,7 +78,6 @@ public class ConsoleController {
         return Results.success(consoleService.pageLinks(req));
     }
 
-    @AdminAudit(actionType = "DISABLE_LINK", targetType = "LINK")
     @PostMapping("/api/short-link/console/v1/links/disable")
     public Result<Void> disableLink(@RequestParam("fullShortUrl") String fullShortUrl,
                                      @RequestParam("gid") String gid) {
@@ -92,7 +85,6 @@ public class ConsoleController {
         return Results.success();
     }
 
-    @AdminAudit(actionType = "ENABLE_LINK", targetType = "LINK")
     @PostMapping("/api/short-link/console/v1/links/enable")
     public Result<Void> enableLink(@RequestParam("fullShortUrl") String fullShortUrl,
                                     @RequestParam("gid") String gid) {
@@ -119,10 +111,5 @@ public class ConsoleController {
                                                                       Long current,
                                                                       Long size) {
         return Results.success(shortLinkOpsInsightService.pageLifecycleAlerts(gid, expiringDays, quotaRiskThreshold, current, size));
-    }
-
-    @GetMapping("/api/short-link/console/v1/audit-logs")
-    public Result<IPage<AdminAuditLogDO>> pageAuditLogs(ConsoleAuditLogPageReqDTO req) {
-        return Results.success(consoleService.pageAuditLogs(req));
     }
 }

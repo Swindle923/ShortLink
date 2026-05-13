@@ -38,6 +38,3 @@ export const opsHighRisk = (params) =>
 
 export const opsLifecycleAlerts = (params) =>
   request.get('/api/short-link/console/v1/ops/lifecycle-alerts', { params });
-
-export const pageAuditLogs = (params) =>
-  request.get('/api/short-link/console/v1/audit-logs', { params });

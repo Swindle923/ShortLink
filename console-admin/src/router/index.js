@@ -12,8 +12,7 @@ const router = createRouter({
         { path: 'dashboard', name: 'Dashboard', component: () => import('@/views/DashboardView.vue') },
         { path: 'users', name: 'Users', component: () => import('@/views/UsersView.vue') },
         { path: 'links', name: 'Links', component: () => import('@/views/LinksView.vue') },
-        { path: 'monitoring', name: 'Monitoring', component: () => import('@/views/MonitoringView.vue') },
-        { path: 'audit', name: 'Audit', component: () => import('@/views/AuditView.vue') }
+        { path: 'monitoring', name: 'Monitoring', component: () => import('@/views/MonitoringView.vue') }
       ]
     },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' }
