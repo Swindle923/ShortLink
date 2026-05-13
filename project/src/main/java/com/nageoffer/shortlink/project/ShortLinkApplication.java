@@ -7,7 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 @MapperScan(value = {
         "com.nageoffer.shortlink.project.dao.mapper",
-        "com.nageoffer.shortlink.project.admin.dao.mapper"
+        "com.nageoffer.shortlink.project.admin.dao.mapper",
+        "com.nageoffer.shortlink.project.console.dao.mapper"
 })
 public class ShortLinkApplication {
 

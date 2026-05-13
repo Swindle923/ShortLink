@@ -22,5 +22,7 @@ public class UserDO extends BaseDO {
 
     private String role;
 
+    private Integer status;
+
     private Long deletionTime;
 }
