@@ -67,7 +67,6 @@
             <el-button class="addButton" type="primary" style="width: 130px; margin-right: 10px"
               @click="isAddSmallLink = true">创建短链</el-button>
             <el-button style="width: 130px; margin-right: 10px" @click="isAddSmallLinks = true">批量创建</el-button>
-            <el-button style="width: 130px" @click="openOpsCenter">运营增强</el-button>
           </div>
         </div>
         <!-- 展示回收站信息 -->
@@ -306,53 +305,8 @@
     <!-- 查看数据弹框 -->
     <ChartsInfo style="width: 880px" ref="chartsInfoRef" :title="chartsInfoTitle" :info="chartsInfo"
       :tableInfo="tableInfo" :isGroup="isGroup" :nums="nums" :favicon="favicon1" :originUrl="originUrl1"
+      :fullShortUrl="chartsFullShortUrl"
       @changeTime="changeTime" @changePage="changePage" top="60px"></ChartsInfo>
-    <!-- 运营增强弹框 -->
-    <el-dialog v-model="opsVisible" title="运营增强中心（不改库）" width="900px">
-      <div v-loading="opsLoading">
-        <div class="ops-overview-grid">
-          <div class="ops-card">
-            <div class="label">短链总数</div>
-            <div class="value">{{ opsOverview.linkCount ?? 0 }}</div>
-          </div>
-          <div class="ops-card">
-            <div class="label">可用短链</div>
-            <div class="value">{{ opsOverview.activeCount ?? 0 }}</div>
-          </div>
-          <div class="ops-card">
-            <div class="label">高风险短链</div>
-            <div class="value danger">{{ opsOverview.highRiskCount ?? 0 }}</div>
-          </div>
-          <div class="ops-card">
-            <div class="label">健康率</div>
-            <div class="value">{{ formatPercent(opsOverview.healthyRate) }}</div>
-          </div>
-        </div>
-        <div class="ops-section-title">生命周期告警</div>
-        <el-table :data="opsLifecycleTable" height="220">
-          <el-table-column prop="fullShortUrl" label="短链" min-width="260" />
-          <el-table-column prop="alertType" label="告警类型" width="100" />
-          <el-table-column prop="alertMessage" label="告警信息" min-width="260" />
-          <el-table-column label="配额使用率" width="120">
-            <template #default="scope">
-              {{ formatRate(scope.row.quotaUsageRate) }}
-            </template>
-          </el-table-column>
-        </el-table>
-        <div class="ops-section-title">高风险短链</div>
-        <el-table :data="opsRiskTable" height="220">
-          <el-table-column prop="fullShortUrl" label="短链" min-width="260" />
-          <el-table-column prop="riskLevel" label="等级" width="90" />
-          <el-table-column prop="riskScore" label="分数" width="80" />
-          <el-table-column prop="riskReason" label="风险原因" min-width="240" />
-          <el-table-column label="突增倍率" width="100">
-            <template #default="scope">
-              {{ scope.row.visitSpikeRatio ?? 0 }}
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </el-dialog>
     <!-- 新建分组弹框 -->
     <el-dialog v-model="isAddGroup" title="新建短链接分组" style="width: 40%">
       <el-form :model="form">
@@ -404,8 +358,17 @@
               <el-icon>
                 <Connection />
               </el-icon>
-              <span>随机跳转</span>
-            </span> </template>暂未开发</el-tab-pane>
+              <span>A/B 测试</span>
+            </span>
+          </template>
+          <CreateLinkAb
+            ref="createLinkAbRef"
+            :groupInfo="editableTabs"
+            @onSubmit="addLink"
+            @cancel="cancelAddLink"
+            :defaultGid="pageParams.gid"
+          />
+        </el-tab-pane>
       </el-tabs>
     </el-dialog>
     <!-- 修改短链信息弹框 -->
@@ -427,6 +390,7 @@ import Sortable from 'sortablejs'
 import { cloneDeep } from 'lodash'
 import ChartsInfo from './components/chartsInfo/ChartsInfo.vue'
 import CreateLink from './components/createLink/CreateLink.vue'
+import CreateLinkAb from './components/createLink/CreateLinkAb.vue'
 import CreateLinks from './components/createLink/CreateLinks.vue'
 import { getTodayFormatDate, getLastWeekFormatDate } from '@/utils/plugins.js'
 import EditLink from './components/editLink/EditLink.vue'
@@ -438,6 +402,7 @@ import QRCode from './components/qrCode/QRCode.vue'
 const nums = ref(0)
 const favicon1 = ref()
 const originUrl1 = ref()
+const chartsFullShortUrl = ref('')
 const orderIndex = ref(0)
 
 const { proxy } = getCurrentInstance()
@@ -450,11 +415,6 @@ const createLink1Ref = ref()
 const createLink2Ref = ref()
 let selectedIndex = ref(0)
 const editableTabs = ref([])
-const opsVisible = ref(false)
-const opsLoading = ref(false)
-const opsOverview = ref({})
-const opsLifecycleTable = ref([])
-const opsRiskTable = ref([])
 // 添加弹窗关闭后重新请求一下页面数据
 const afterAddLink = () => {
   setTimeout(() => {
@@ -501,6 +461,7 @@ const chartsVisible = async (rowInfo, dateList) => {
   isGroup.value = group
   tableFullShortUrl.value = fullShortUrl
   tableGid.value = gid
+  chartsFullShortUrl.value = fullShortUrl || ''
   // 后续修改时间的时候拿去用
   visitLink.fullShortUrl = fullShortUrl
   visitLink.gid = gid
@@ -660,50 +621,6 @@ const queryPage = async () => {
     totalNums.value = +res.data?.data?.total
   } else {
     ElMessage.error(res?.data.message)
-  }
-}
-
-const formatPercent = (value) => {
-  if (value === null || value === undefined) {
-    return '0%'
-  }
-  return `${Number(value).toFixed(2)}%`
-}
-
-const formatRate = (value) => {
-  if (value === null || value === undefined) {
-    return '-'
-  }
-  return `${(Number(value) * 100).toFixed(2)}%`
-}
-
-const openOpsCenter = async () => {
-  const gid = editableTabs.value?.[selectedIndex.value]?.gid
-  if (!gid) {
-    ElMessage.warning('请先选择一个分组')
-    return
-  }
-  opsVisible.value = true
-  opsLoading.value = true
-  try {
-    const [overviewRes, lifecycleRes, riskRes] = await Promise.all([
-      API.smallLinkPage.queryOpsOverview({ gid, expiringDays: 7, quotaRiskThreshold: 0.8 }),
-      API.smallLinkPage.queryOpsLifecycleAlerts({
-        gid,
-        expiringDays: 7,
-        quotaRiskThreshold: 0.8,
-        current: 1,
-        size: 10
-      }),
-      API.smallLinkPage.queryOpsHighRisk({ gid, current: 1, size: 10 })
-    ])
-    opsOverview.value = overviewRes?.data?.data || {}
-    opsLifecycleTable.value = lifecycleRes?.data?.data?.records || []
-    opsRiskTable.value = riskRes?.data?.data?.records || []
-  } catch (e) {
-    ElMessage.error('获取运营增强数据失败')
-  } finally {
-    opsLoading.value = false
   }
 }
 
@@ -1282,41 +1199,5 @@ const removeLink = (data) => {
   // height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-.ops-overview-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.ops-card {
-  border: 1px solid #e8ecf3;
-  border-radius: 6px;
-  padding: 10px;
-  background: #fafbfd;
-}
-
-.ops-card .label {
-  font-size: 12px;
-  color: #8a9099;
-}
-
-.ops-card .value {
-  margin-top: 6px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.ops-card .danger {
-  color: #ef4444;
-}
-
-.ops-section-title {
-  margin: 12px 0 8px;
-  font-size: 14px;
-  font-weight: 600;
 }
 </style>

@@ -39,6 +39,8 @@ public class ShortLinkDO extends BaseDO {
 
     private Date validDate;
 
+    private Integer redirectMode;
+
     @TableField("`describe`")
     private String describe;
 

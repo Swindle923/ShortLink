@@ -31,4 +31,6 @@ public class LinkAccessLogsDO extends BaseDO {
     private String device;
 
     private String locale;
+
+    private String variantKey;
 }

@@ -91,6 +91,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final ShortLinkStatsSaveProducer shortLinkStatsSaveProducer;
     private final GotoDomainWhiteListConfiguration gotoDomainWhiteListConfiguration;
     private final BizMetricsKit bizMetricsKit;
+    private final com.nageoffer.shortlink.project.dao.mapper.LinkAbTestMapper linkAbTestMapper;
 
     @Value("${short-link.domain.default}")
     private String createShortLinkDefaultDomain;
@@ -100,6 +101,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
 
         verificationWhitelist(requestParam.getOriginUrl());
+        boolean abMode = isAbTestMode(requestParam);
+        if (abMode) {
+            validateAbVariants(requestParam);
+        }
         String shortLinkSuffix = generateSuffix(requestParam);
         String fullShortUrl = StrBuilder.create(createShortLinkDefaultDomain)
                 .append("/")
@@ -123,6 +128,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .delTime(0L)
                 .fullShortUrl(fullShortUrl)
                 .favicon(getFavicon(requestParam.getOriginUrl()))
+                .redirectMode(abMode ? 1 : 0)
                 .build();
         ShortLinkGotoDO linkGotoDO = ShortLinkGotoDO.builder()
                 .fullShortUrl(fullShortUrl)
@@ -133,6 +139,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             baseMapper.insert(shortLinkDO);
 
             shortLinkGotoMapper.insert(linkGotoDO);
+            if (abMode) {
+                insertAbVariants(fullShortUrl, requestParam.getAbVariants());
+            }
         } catch (DuplicateKeyException ex) {
 
             if (!shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl)) {
@@ -142,19 +151,62 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             throw new ServiceException(String.format("短链接：%s 生成重复", fullShortUrl));
         }
 
-        stringRedisTemplate.opsForValue().set(
-                String.format(GOTO_SHORT_LINK_KEY, fullShortUrl),
-                requestParam.getOriginUrl(),
-                LinkUtil.getLinkCacheValidTime(requestParam.getValidDate()), TimeUnit.MILLISECONDS
-        );
+        if (!abMode) {
+            stringRedisTemplate.opsForValue().set(
+                    String.format(GOTO_SHORT_LINK_KEY, fullShortUrl),
+                    requestParam.getOriginUrl(),
+                    LinkUtil.getLinkCacheValidTime(requestParam.getValidDate()), TimeUnit.MILLISECONDS
+            );
+        }
 
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
-        bizMetricsKit.increment("shortlink.biz.shortlink.create", "result", "success", "mode", "single");
+        bizMetricsKit.increment("shortlink.biz.shortlink.create", "result", "success", "mode", abMode ? "ab" : "single");
         return ShortLinkCreateRespDTO.builder()
                 .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
                 .originUrl(requestParam.getOriginUrl())
                 .gid(requestParam.getGid())
                 .build();
+    }
+
+    private boolean isAbTestMode(ShortLinkCreateReqDTO req) {
+        return req.getRedirectMode() != null && req.getRedirectMode() == 1
+                && req.getAbVariants() != null && !req.getAbVariants().isEmpty();
+    }
+
+    private void validateAbVariants(ShortLinkCreateReqDTO req) {
+        java.util.List<com.nageoffer.shortlink.project.dto.req.ShortLinkAbVariantReqDTO> variants = req.getAbVariants();
+        if (variants.size() < 2 || variants.size() > 4) {
+            throw new ClientException("A/B 变体数量需在 2 到 4 之间");
+        }
+        int sum = 0;
+        java.util.Set<String> keys = new java.util.HashSet<>();
+        for (com.nageoffer.shortlink.project.dto.req.ShortLinkAbVariantReqDTO v : variants) {
+            if (v.getVariantKey() == null || v.getTargetUrl() == null || v.getWeight() == null) {
+                throw new ClientException("A/B 变体字段不完整");
+            }
+            if (v.getWeight() < 0 || v.getWeight() > 100) {
+                throw new ClientException("A/B 变体权重需在 0 到 100 之间");
+            }
+            if (!keys.add(v.getVariantKey())) {
+                throw new ClientException("A/B 变体标识重复：" + v.getVariantKey());
+            }
+            sum += v.getWeight();
+        }
+        if (sum != 100) {
+            throw new ClientException("A/B 变体权重之和必须等于 100，当前为 " + sum);
+        }
+    }
+
+    private void insertAbVariants(String fullShortUrl, java.util.List<com.nageoffer.shortlink.project.dto.req.ShortLinkAbVariantReqDTO> variants) {
+        for (com.nageoffer.shortlink.project.dto.req.ShortLinkAbVariantReqDTO v : variants) {
+            com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO doRow = new com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO();
+            doRow.setFullShortUrl(fullShortUrl);
+            doRow.setVariantKey(v.getVariantKey());
+            doRow.setTargetUrl(v.getTargetUrl());
+            doRow.setWeight(v.getWeight());
+            doRow.setHitCount(0);
+            linkAbTestMapper.insert(doRow);
+        }
     }
 
     @Override
@@ -376,13 +428,29 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .orElse("");
         String fullShortUrl = serverName + serverPort + "/" + shortUri;
         String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
-        if (StrUtil.isNotBlank(originalLink)) {
+        if (StrUtil.isNotBlank(originalLink) && !"AB".equals(originalLink)) {
             if (!tryConsumeAccessQuota(fullShortUrl)) {
                 ((HttpServletResponse) response).sendRedirect(ShortLinkConstant.NOT_FOUND_REDIRECT);
                 return;
             }
-            shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
+            shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response).toBuilder().variantKey(null).build());
             ((HttpServletResponse) response).sendRedirect(originalLink);
+            return;
+        }
+        // Cache hit with AB marker → pick variant at every visit
+        if ("AB".equals(originalLink)) {
+            com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO picked = pickAbVariant(fullShortUrl);
+            if (picked == null) {
+                ((HttpServletResponse) response).sendRedirect(ShortLinkConstant.NOT_FOUND_REDIRECT);
+                return;
+            }
+            if (!tryConsumeAccessQuota(fullShortUrl)) {
+                ((HttpServletResponse) response).sendRedirect(ShortLinkConstant.NOT_FOUND_REDIRECT);
+                return;
+            }
+            shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response).toBuilder().variantKey(picked.getVariantKey()).build());
+            linkAbTestMapper.incrementHitCount(picked.getId());
+            ((HttpServletResponse) response).sendRedirect(picked.getTargetUrl());
             return;
         }
         boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
@@ -399,12 +467,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         lock.lock();
         try {
             originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
-            if (StrUtil.isNotBlank(originalLink)) {
+            if (StrUtil.isNotBlank(originalLink) && !"AB".equals(originalLink)) {
                 if (!tryConsumeAccessQuota(fullShortUrl)) {
                     ((HttpServletResponse) response).sendRedirect(ShortLinkConstant.NOT_FOUND_REDIRECT);
                     return;
                 }
-                shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
+                shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response).toBuilder().variantKey(null).build());
                 ((HttpServletResponse) response).sendRedirect(originalLink);
                 return;
             }
@@ -432,6 +500,27 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 ((HttpServletResponse) response).sendRedirect(ShortLinkConstant.NOT_FOUND_REDIRECT);
                 return;
             }
+            boolean abMode = shortLinkDO.getRedirectMode() != null && shortLinkDO.getRedirectMode() == 1;
+            if (abMode) {
+                com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO picked = pickAbVariant(fullShortUrl);
+                if (picked == null) {
+                    ((HttpServletResponse) response).sendRedirect(ShortLinkConstant.NOT_FOUND_REDIRECT);
+                    return;
+                }
+                if (!tryConsumeAccessQuota(shortLinkDO)) {
+                    ((HttpServletResponse) response).sendRedirect(ShortLinkConstant.NOT_FOUND_REDIRECT);
+                    return;
+                }
+                stringRedisTemplate.opsForValue().set(
+                        String.format(GOTO_SHORT_LINK_KEY, fullShortUrl),
+                        "AB",
+                        LinkUtil.getLinkCacheValidTime(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS
+                );
+                shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response).toBuilder().variantKey(picked.getVariantKey()).build());
+                linkAbTestMapper.incrementHitCount(picked.getId());
+                ((HttpServletResponse) response).sendRedirect(picked.getTargetUrl());
+                return;
+            }
             if (!tryConsumeAccessQuota(shortLinkDO)) {
                 ((HttpServletResponse) response).sendRedirect(ShortLinkConstant.NOT_FOUND_REDIRECT);
                 return;
@@ -441,11 +530,36 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     shortLinkDO.getOriginUrl(),
                     LinkUtil.getLinkCacheValidTime(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS
             );
-            shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
+            shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response).toBuilder().variantKey(null).build());
             ((HttpServletResponse) response).sendRedirect(shortLinkDO.getOriginUrl());
         } finally {
             lock.unlock();
         }
+    }
+
+    private com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO pickAbVariant(String fullShortUrl) {
+        java.util.List<com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO> variants = linkAbTestMapper.selectList(
+                com.baomidou.mybatisplus.core.toolkit.Wrappers.lambdaQuery(com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO.class)
+                        .eq(com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO::getFullShortUrl, fullShortUrl)
+                        .eq(com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO::getDelFlag, 0)
+                        .orderByAsc(com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO::getId)
+        );
+        if (variants.isEmpty()) {
+            return null;
+        }
+        int total = variants.stream().mapToInt(v -> v.getWeight() == null ? 0 : v.getWeight()).sum();
+        if (total <= 0) {
+            return variants.get(java.util.concurrent.ThreadLocalRandom.current().nextInt(variants.size()));
+        }
+        int roll = java.util.concurrent.ThreadLocalRandom.current().nextInt(total);
+        int acc = 0;
+        for (com.nageoffer.shortlink.project.dao.entity.LinkAbTestDO v : variants) {
+            acc += v.getWeight() == null ? 0 : v.getWeight();
+            if (roll < acc) {
+                return v;
+            }
+        }
+        return variants.get(variants.size() - 1);
     }
 
     private ShortLinkStatsRecordDTO buildLinkStatsRecordAndSetUser(String fullShortUrl, ServletRequest request, ServletResponse response) {

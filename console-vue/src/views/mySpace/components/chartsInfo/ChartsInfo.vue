@@ -188,12 +188,43 @@
             @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
       </el-tab-pane>
+      <el-tab-pane v-if="!isGroup" name="A/B 结果" label="A/B 结果">
+        <div v-if="abVariants.length === 0" class="ab-empty">该短链未配置 A/B 测试</div>
+        <div v-else class="ab-wrap">
+          <el-table :data="abVariants" border style="width: 100%">
+            <el-table-column label="变体" prop="variantKey" width="80">
+              <template #default="scope">
+                <span class="ab-badge">{{ scope.row.variantKey }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="跳转 URL" prop="targetUrl" min-width="260" show-overflow-tooltip />
+            <el-table-column label="权重(%)" prop="weight" width="90" align="center" />
+            <el-table-column label="分流命中" prop="hitCount" width="90" align="center" />
+            <el-table-column label="访问 PV" prop="pv" width="90" align="center" />
+            <el-table-column label="独立 UV" prop="uv" width="90" align="center" />
+            <el-table-column label="独立 IP" prop="uip" width="90" align="center" />
+            <el-table-column label="实际 PV 占比" width="150" align="center">
+              <template #default="scope">
+                <el-progress
+                  :percentage="scope.row.pvRatio || 0"
+                  :stroke-width="14"
+                  :color="abBarColor(scope.row.variantKey)"
+                />
+              </template>
+            </el-table-column>
+          </el-table>
+          <div class="ab-summary">
+            <span>总样本 PV：{{ abTotalPv }}</span>
+            <span>领先变体：<b>{{ abLeader }}</b></span>
+          </div>
+        </div>
+      </el-tab-pane>
     </el-tabs>
   </el-dialog>
 </template>
 
 <script setup>
-import { ref, watch, reactive } from 'vue'
+import { ref, watch, reactive, getCurrentInstance } from 'vue'
 import TitleContent from './TitleContent.vue'
 import * as echarts from 'echarts'
 import 'echarts/map/js/china.js'
@@ -354,7 +385,8 @@ const props = defineProps({
   isGroup: Boolean,
   nums: Number,
   favicon: String,
-  originUrl: String
+  originUrl: String,
+  fullShortUrl: String
 })
 const pageParams = reactive({
   current: 1,
@@ -396,7 +428,41 @@ watch(
 //     deep: true,
 //   }
 // )
+const { proxy } = getCurrentInstance()
+const API = proxy.$API
 const dialogVisible = ref(false)
+const abVariants = ref([])
+const abTotalPv = ref(0)
+const abLeader = ref('-')
+const AB_COLORS = {
+  A: '#409EFF',
+  B: '#67C23A',
+  C: '#E6A23C',
+  D: '#F56C6C'
+}
+const abBarColor = (key) => AB_COLORS[key] || '#909399'
+
+const loadAbStats = async () => {
+  abVariants.value = []
+  abTotalPv.value = 0
+  abLeader.value = '-'
+  if (!props.fullShortUrl) {
+    return
+  }
+  try {
+    const resp = await API.smallLinkPage.queryAbStats({ fullShortUrl: props.fullShortUrl })
+    const data = resp?.data?.data || []
+    abVariants.value = data
+    abTotalPv.value = data.reduce((s, v) => s + (v.pv || 0), 0)
+    if (data.length > 0) {
+      const best = data.reduce((acc, cur) => ((cur.pv || 0) > (acc.pv || 0) ? cur : acc), data[0])
+      abLeader.value = best.variantKey + (abTotalPv.value > 0 ? `（PV ${best.pv}，占比 ${best.pvRatio}%）` : '')
+    }
+  } catch (e) {
+    abVariants.value = []
+  }
+}
+
 const handleClose = () => {
   dateValue.value = null
   unVisible()
@@ -406,6 +472,7 @@ const handleClose = () => {
 }
 const isVisible = () => {
   dialogVisible.value = true
+  loadAbStats()
 }
 const unVisible = () => {
   dialogVisible.value = false
@@ -985,4 +1052,34 @@ watch(
     margin-left: 20%;
   }
 }
+
+.ab-wrap { padding: 8px 0; }
+.ab-empty {
+  text-align: center;
+  padding: 40px 0;
+  color: #909399;
+  font-size: 14px;
+}
+.ab-badge {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  border-radius: 4px;
+  background: #409eff;
+  color: #fff;
+  font-weight: 600;
+}
+.ab-summary {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #f5f7fa;
+  border-radius: 4px;
+  display: flex;
+  gap: 32px;
+  font-size: 13px;
+  color: #606266;
+}
+.ab-summary b { color: #409eff; margin: 0 4px; }
 </style>

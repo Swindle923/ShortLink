@@ -180,6 +180,7 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                     .device(statsRecord.getDevice())
                     .locale(StrUtil.join("-", "中国", actualProvince, actualCity))
                     .fullShortUrl(fullShortUrl)
+                    .variantKey(statsRecord.getVariantKey())
                     .build();
             linkAccessLogsMapper.insert(linkAccessLogsDO);
             shortLinkMapper.incrementStats(gid, fullShortUrl, 1, statsRecord.getUvFirstFlag() ? 1 : 0, statsRecord.getUipFirstFlag() ? 1 : 0);

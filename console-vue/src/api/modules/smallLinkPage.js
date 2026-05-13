@@ -85,28 +85,12 @@ export default {
       url: 'stats/access-record'
     })
   },
-  // 运营增强总览
-  queryOpsOverview(data) {
+  // 查询单条短链 A/B 测试结果
+  queryAbStats(data) {
     return http({
       method: 'get',
       params: data,
-      url: 'ops/overview'
+      url: 'stats/ab'
     })
   },
-  // 高风险短链分页
-  queryOpsHighRisk(data) {
-    return http({
-      method: 'get',
-      params: data,
-      url: 'ops/high-risk'
-    })
-  },
-  // 生命周期告警分页
-  queryOpsLifecycleAlerts(data) {
-    return http({
-      method: 'get',
-      params: data,
-      url: 'ops/lifecycle-alerts'
-    })
-  }
 }
