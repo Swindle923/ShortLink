@@ -1,7 +1,15 @@
 package com.nageoffer.shortlink.project.service.ops;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.nageoffer.shortlink.project.dao.entity.LinkStatsTodayDO;
+import com.nageoffer.shortlink.project.dao.entity.ShortLinkDO;
+import com.nageoffer.shortlink.project.dao.mapper.LinkStatsTodayMapper;
+import com.nageoffer.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkOpsLifecycleAlertRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkOpsOverviewRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkOpsRiskRespDTO;
@@ -16,7 +24,9 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -28,6 +38,8 @@ public class ShortLinkOpsInsightService {
     private static final int FETCH_PAGE_SIZE = 200;
 
     private final ShortLinkService shortLinkService;
+    private final ShortLinkMapper shortLinkMapper;
+    private final LinkStatsTodayMapper linkStatsTodayMapper;
 
     public ShortLinkOpsOverviewRespDTO buildOverview(String gid, Integer expiringDays, Double quotaRiskThreshold) {
         int effectiveExpiringDays = expiringDays == null || expiringDays <= 0 ? 7 : expiringDays;
@@ -240,6 +252,9 @@ public class ShortLinkOpsInsightService {
     }
 
     private List<ShortLinkPageRespDTO> fetchAllLinksByGid(String gid) {
+        if (StrUtil.isBlank(gid)) {
+            return fetchAllLinksGlobal();
+        }
         List<ShortLinkPageRespDTO> result = new ArrayList<>();
         long current = 1L;
         while (true) {
@@ -258,6 +273,37 @@ public class ShortLinkOpsInsightService {
             current++;
         }
         return result;
+    }
+
+    private List<ShortLinkPageRespDTO> fetchAllLinksGlobal() {
+        LambdaQueryWrapper<ShortLinkDO> wrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
+                .eq(ShortLinkDO::getDelFlag, 0)
+                .orderByDesc(ShortLinkDO::getCreateTime);
+        List<ShortLinkDO> links = shortLinkMapper.selectList(wrapper);
+        if (links.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<String> urls = links.stream().map(ShortLinkDO::getFullShortUrl).collect(Collectors.toList());
+        Map<String, LinkStatsTodayDO> todayMap = new HashMap<>();
+        linkStatsTodayMapper.selectList(Wrappers.lambdaQuery(LinkStatsTodayDO.class)
+                .in(LinkStatsTodayDO::getFullShortUrl, urls)
+                .eq(LinkStatsTodayDO::getDate, new java.sql.Date(System.currentTimeMillis()))
+                .eq(LinkStatsTodayDO::getDelFlag, 0)
+        ).forEach(t -> todayMap.put(t.getFullShortUrl(), t));
+
+        return links.stream().map(link -> {
+            ShortLinkPageRespDTO dto = BeanUtil.toBean(link, ShortLinkPageRespDTO.class);
+            if (dto.getDomain() != null && !dto.getDomain().startsWith("http")) {
+                dto.setDomain("http://" + dto.getDomain());
+            }
+            LinkStatsTodayDO t = todayMap.get(link.getFullShortUrl());
+            if (t != null) {
+                dto.setTodayPv(t.getTodayPv());
+                dto.setTodayUv(t.getTodayUv());
+                dto.setTodayUip(t.getTodayUip());
+            }
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     private <T> Page<T> toPage(List<T> source, long current, long size) {
