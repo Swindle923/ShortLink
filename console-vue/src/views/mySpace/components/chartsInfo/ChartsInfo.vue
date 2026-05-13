@@ -224,7 +224,7 @@
 </template>
 
 <script setup>
-import { ref, watch, reactive, getCurrentInstance } from 'vue'
+import { ref, watch, reactive, getCurrentInstance, nextTick } from 'vue'
 import TitleContent from './TitleContent.vue'
 import * as echarts from 'echarts'
 import 'echarts/map/js/china.js'
@@ -434,6 +434,7 @@ const dialogVisible = ref(false)
 const abVariants = ref([])
 const abTotalPv = ref(0)
 const abLeader = ref('-')
+const currentAbUrl = ref('')
 const AB_COLORS = {
   A: '#409EFF',
   B: '#67C23A',
@@ -446,11 +447,12 @@ const loadAbStats = async () => {
   abVariants.value = []
   abTotalPv.value = 0
   abLeader.value = '-'
-  if (!props.fullShortUrl) {
+  const url = currentAbUrl.value || props.fullShortUrl
+  if (!url) {
     return
   }
   try {
-    const resp = await API.smallLinkPage.queryAbStats({ fullShortUrl: props.fullShortUrl })
+    const resp = await API.smallLinkPage.queryAbStats({ fullShortUrl: url })
     const data = resp?.data?.data || []
     abVariants.value = data
     abTotalPv.value = data.reduce((s, v) => s + (v.pv || 0), 0)
@@ -470,9 +472,12 @@ const handleClose = () => {
   dateValue.value = [getLastWeekFormatDate(), getTodayFormatDate()]
   document.querySelector('.scroll-box').scrollTop = 0
 }
-const isVisible = () => {
+const isVisible = (fullShortUrl) => {
+  if (fullShortUrl != null) {
+    currentAbUrl.value = fullShortUrl
+  }
   dialogVisible.value = true
-  loadAbStats()
+  nextTick(loadAbStats)
 }
 const unVisible = () => {
   dialogVisible.value = false

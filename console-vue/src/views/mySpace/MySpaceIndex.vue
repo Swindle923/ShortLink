@@ -466,7 +466,7 @@ const chartsVisible = async (rowInfo, dateList) => {
   visitLink.fullShortUrl = fullShortUrl
   visitLink.gid = gid
   visitLink.enableStatus = enableStatus
-  chartsInfoRef?.value.isVisible()
+  chartsInfoRef?.value.isVisible(fullShortUrl || '')
   // 如果没有时间传值，就默认查找过去一周的数据
   if (!dateList) {
     initStatsFormData()
