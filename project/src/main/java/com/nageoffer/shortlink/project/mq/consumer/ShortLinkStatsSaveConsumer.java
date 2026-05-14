@@ -121,27 +121,31 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                     .date(currentDate)
                     .build();
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
-            Map<String, Object> localeParamMap = new HashMap<>();
-            localeParamMap.put("key", statsLocaleAmapKey);
-            localeParamMap.put("ip", statsRecord.getRemoteAddr());
-            String localeResultStr = HttpUtil.get(AMAP_REMOTE_URL, localeParamMap);
-            JSONObject localeResultObj = JSON.parseObject(localeResultStr);
-            String infoCode = localeResultObj.getString("infocode");
             String actualProvince = "未知";
             String actualCity = "未知";
-            if (StrUtil.isNotBlank(infoCode) && StrUtil.equals(infoCode, "10000")) {
-                String province = localeResultObj.getString("province");
-                boolean unknownFlag = StrUtil.equals(province, "[]");
-                LinkLocaleStatsDO linkLocaleStatsDO = LinkLocaleStatsDO.builder()
-                        .province(actualProvince = unknownFlag ? actualProvince : province)
-                        .city(actualCity = unknownFlag ? actualCity : localeResultObj.getString("city"))
-                        .adcode(unknownFlag ? "未知" : localeResultObj.getString("adcode"))
-                        .cnt(1)
-                        .fullShortUrl(fullShortUrl)
-                        .country("中国")
-                        .date(currentDate)
-                        .build();
-                linkLocaleStatsMapper.shortLinkLocaleState(linkLocaleStatsDO);
+            try {
+                Map<String, Object> localeParamMap = new HashMap<>();
+                localeParamMap.put("key", statsLocaleAmapKey);
+                localeParamMap.put("ip", statsRecord.getRemoteAddr());
+                String localeResultStr = HttpUtil.get(AMAP_REMOTE_URL, localeParamMap);
+                JSONObject localeResultObj = JSON.parseObject(localeResultStr);
+                String infoCode = localeResultObj.getString("infocode");
+                if (StrUtil.isNotBlank(infoCode) && StrUtil.equals(infoCode, "10000")) {
+                    String province = localeResultObj.getString("province");
+                    boolean unknownFlag = StrUtil.equals(province, "[]");
+                    LinkLocaleStatsDO linkLocaleStatsDO = LinkLocaleStatsDO.builder()
+                            .province(actualProvince = unknownFlag ? actualProvince : province)
+                            .city(actualCity = unknownFlag ? actualCity : localeResultObj.getString("city"))
+                            .adcode(unknownFlag ? "未知" : localeResultObj.getString("adcode"))
+                            .cnt(1)
+                            .fullShortUrl(fullShortUrl)
+                            .country("中国")
+                            .date(currentDate)
+                            .build();
+                    linkLocaleStatsMapper.shortLinkLocaleState(linkLocaleStatsDO);
+                }
+            } catch (Exception ex) {
+                log.warn("获取IP地理位置失败，ip={}, err={}", statsRecord.getRemoteAddr(), ex.getMessage());
             }
             LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
                     .os(statsRecord.getOs())
