@@ -8,7 +8,7 @@
         <el-form ref="loginFormRef1" :model="loginForm" label-width="50px" :rules="loginFormRule">
           <div class="form-container1">
             <el-form-item prop="phone">
-              <el-input v-model="loginForm.username" placeholder="请输入用户名" maxlength="11" show-word-limit clearable>
+              <el-input v-model="loginForm.username" placeholder="请输入用户名" maxlength="20" show-word-limit clearable>
                 <template v-slot:prepend> 用户名 </template>
               </el-input>
             </el-form-item>
@@ -38,7 +38,7 @@
         <el-form ref="loginFormRef2" :model="addForm" label-width="50px" class="form-container" width="width"
           :rules="addFormRule">
           <el-form-item prop="username">
-            <el-input v-model="addForm.username" placeholder="请输入用户名" maxlength="11" show-word-limit clearable>
+            <el-input v-model="addForm.username" placeholder="请输入用户名" maxlength="20" show-word-limit clearable>
               <template v-slot:prepend> 用户名 </template>
             </el-input>
           </el-form-item>

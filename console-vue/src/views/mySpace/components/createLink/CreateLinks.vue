@@ -287,24 +287,6 @@ const transferStrToArray = (str) => {
 // 将组件里面的确认和取消点击事件传出去
 const emits = defineEmits(['onSubmit', 'cancel'])
 
-function downLoadXls(res) {
-  let url = window.URL.createObjectURL(
-    new Blob([res.data], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    })
-  )
-  // 创建A标签
-  let link = document.createElement('a')
-  link.style.display = 'none'
-  link.href = url
-  // 设置的下载文件文件名
-  const fileName = decodeURI(res.headers['content-disposition'].split(';')[1].split('filename*=')[1])
-  // 触发点击方法
-  link.setAttribute('download', fileName)
-  document.body.appendChild(link)
-  link.click()
-}
-
 // 点击确定按钮后的校验
 const ruleFormRef = ref()
 const submitDisable = ref(false)
@@ -314,26 +296,19 @@ const onSubmit = async (formEl) => {
     submitDisable.value = false
     return
   }
-  await formEl.validate(async (valid, fields) => {
+  await formEl.validate(async (valid) => {
     if (valid) {
       let { describes, originUrls } = formData
       describes = transferStrToArray(describes)
       originUrls = transferStrToArray(originUrls)
       const res = await API.smallLinkPage.addLinks({ ...formData, describes, originUrls })
-      if (!res.data.data && res.data) {
-        ElMessage.success('创建成功！短链列表已开始下载')
-        emits('onSubmit', false)
-        submitDisable.value = false
-        downLoadXls(res)
-      } else if (!res?.data?.success) {
+      if (res?.data?.success === false) {
         ElMessage.error(res?.data?.message)
       } else {
-        ElMessage.success('创建成功！短链列表已开始下载')
+        ElMessage.success('创建成功！')
         emits('onSubmit', false)
-        submitDisable.value = false
       }
-    } else {
-      // ElMessage.error('创建失败！')
+      submitDisable.value = false
     }
   })
 }

@@ -31,10 +31,10 @@ export const enableLink = (fullShortUrl, gid) =>
   request.post('/api/short-link/console/v1/links/enable', null, { params: { fullShortUrl, gid } });
 
 export const opsOverview = (params) =>
-  request.get('/api/short-link/console/v1/ops/overview', { params });
+  request.get('/api/short-link/admin/v1/ops/overview', { params });
 
 export const opsHighRisk = (params) =>
-  request.get('/api/short-link/console/v1/ops/high-risk', { params });
+  request.get('/api/short-link/admin/v1/ops/high-risk', { params });
 
 export const opsLifecycleAlerts = (params) =>
-  request.get('/api/short-link/console/v1/ops/lifecycle-alerts', { params });
+  request.get('/api/short-link/admin/v1/ops/lifecycle-alerts', { params });
